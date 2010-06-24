@@ -58,7 +58,7 @@ module Footnotes
   #{print_name_and_time(item.name, item.time)}<br />
   <span id="explain_#{i}">#{print_query(item.query)}</span><br />
   #{print_explain(i, item.explain) if item.explain}
-  <p id="qtrace_#{i}" style="display:none;">#{parse_trace(item.trace) if item.trace}</p><br />
+  <p id="qtrace_#{i}">#{parse_trace(item.trace) if item.trace}</p><br />
           HTML
         end
 
@@ -101,7 +101,7 @@ module Footnotes
       end
 
       def print_explain(i, explain)
-        mount_table(parse_explain(explain), :id => "qtable_#{i}", :style => 'margin:10px;display:none;', :summary => "Debug information for #{title}")
+        mount_table(parse_explain(explain), :id => "qtable_#{i}", :style => 'margin:10px;', :summary => "Debug information for #{title}")
       end
 
       def generate_red_color(value, alert)

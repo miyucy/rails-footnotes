@@ -253,7 +253,7 @@ module Footnotes
       each_with_rescue(@notes) do |note|
         next unless note.has_fieldset?
         content << <<-HTML
-            <fieldset id="#{note.to_sym}_debug_info" style="display: none">
+            <fieldset id="#{note.to_sym}_debug_info">
               <legend>#{note.legend}</legend>
               <div>#{note.content}</div>
             </fieldset>
