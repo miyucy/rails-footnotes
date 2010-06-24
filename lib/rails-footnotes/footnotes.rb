@@ -131,8 +131,7 @@ module Footnotes
     end
 
     def valid_content_type?
-      c = @controller.response.headers['Content-Type'].to_s
-      (c.empty? || c =~ /html/)
+      @controller.response.content_type.empty? || @controller.response.content_type =~ /html/
     end
 
     def component_request?
