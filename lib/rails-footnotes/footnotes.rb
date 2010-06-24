@@ -1,6 +1,5 @@
 module Footnotes
   class Filter
-    @@no_style = false
     @@multiple_notes = false
     @@klasses = []
 
@@ -15,10 +14,9 @@ module Footnotes
     #  @@notes << :rpm
     # end
 
-    # :no_style       => If you don't want the style to be appended to your pages
     # :notes          => Class variable that holds the notes to be processed
     # :multiple_notes => Set to true if you want to open several notes at the same time
-    cattr_accessor :no_style, :notes, :multiple_notes
+    cattr_accessor :notes, :multiple_notes
 
     class << self
       # Method called to start the notes
@@ -111,7 +109,7 @@ module Footnotes
 
     def add_footnotes_without_validation!
       initialize_notes!
-      insert_styles unless @@no_style
+      insert_styles
       insert_footnotes
     end
 
