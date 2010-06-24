@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes

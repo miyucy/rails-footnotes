@@ -1,15 +1,10 @@
-unless defined?(ENABLE_RAILS_FOOTNOTES)
-  ENABLE_RAILS_FOOTNOTES=(RAILS_ENV == 'development')
-end
-if ENABLE_RAILS_FOOTNOTES
-  dir = File.dirname(__FILE__)
-  require File.join(dir, 'rails-footnotes', 'footnotes')
-  require File.join(dir, 'rails-footnotes', 'backtracer')
+if Rails.env.development?
+  require 'rails-footnotes/footnotes'
 
   # Load all notes
   #
-  Dir[File.join(dir, 'rails-footnotes', 'notes', '*.rb')].sort.each do |note|
-    require note
+  Dir[File.join(File.dirname(__FILE__), 'rails-footnotes', 'notes', '*.rb')].sort.each do |note|
+    require 'rails-footnotes/notes/' + File.basename(note, '.rb')
   end
 
   # The footnotes are applied by default to all actions. You can change this

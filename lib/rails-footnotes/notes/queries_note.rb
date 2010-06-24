@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes
@@ -8,15 +8,15 @@ module Footnotes
       @@sql = []
       @@include_when_new_relic_installed = false
       @@loaded = false
-      
+
       cattr_accessor :sql, :alert_db_time, :alert_sql_number, :alert_explain, :loaded, :sql_explain, :instance_writter => false
       cattr_reader :include_when_new_relic_installed
-      
+
       def self.include_when_new_relic_installed=(include_me)
         @@include_when_new_relic_installed = include_me
         load if include_me
       end
-      
+
       def self.start!(controller)
         @@sql = []
       end
@@ -31,7 +31,7 @@ module Footnotes
         db_color    = generate_red_color(db_time, alert_db_time)
 
         <<-TITLE
-  <span style="background-color:#{query_color}">Queries (#{@@sql.length})</span> 
+  <span style="background-color:#{query_color}">Queries (#{@@sql.length})</span>
   <span style="background-color:#{db_color}">DB (#{"%.6f" % db_time}s)</span>
         TITLE
       end
@@ -64,7 +64,7 @@ module Footnotes
 
         return html
       end
-      
+
       def self.load
         #only include when NewRelic is installed if configured to do so
         if !loaded and included? and defined?(ActiveRecord)
@@ -77,48 +77,48 @@ module Footnotes
           end
         end
       end
-      
+
       protected
-        def parse_explain(results)
-          table = []
-          table << results.fetch_fields.map(&:name)
-          results.each do |row|
-            table << row
-          end
-          table
+      def parse_explain(results)
+        table = []
+        table << results.fetch_fields.map(&:name)
+        results.each do |row|
+          table << row
         end
+        table
+      end
 
-        def parse_trace(trace)
-          trace.map do |t|
-            s = t.split(':')
-            %[<a href="#{escape(Footnotes::Filter.prefix("#{RAILS_ROOT}/#{s[0]}", s[1].to_i, 1))}">#{escape(t)}</a><br />]
-          end.join
-        end
+      def parse_trace(trace)
+        trace.map do |t|
+          s = t.split(':')
+          %[<a href="#{escape(Footnotes::Filter.prefix("#{RAILS_ROOT}/#{s[0]}", s[1].to_i, 1))}">#{escape(t)}</a><br />]
+        end.join
+      end
 
-        def print_name_and_time(name, time)
-          "<span style='background-color:#{generate_red_color(time, alert_ratio)}'>#{escape(name || 'SQL')} (#{sprintf('%f', time)}s)</span>"
-        end
+      def print_name_and_time(name, time)
+        "<span style='background-color:#{generate_red_color(time, alert_ratio)}'>#{escape(name || 'SQL')} (#{sprintf('%f', time)}s)</span>"
+      end
 
-        def print_query(query)
-          escape(query.to_s.gsub(/(\s)+/, ' ').gsub('`', ''))
-        end
+      def print_query(query)
+        escape(query.to_s.gsub(/(\s)+/, ' ').gsub(/`/, ''))
+      end
 
-        def print_explain(i, explain)
-          mount_table(parse_explain(explain), :id => "qtable_#{i}", :style => 'margin:10px;display:none;', :summary => "Debug information for #{title}")
-        end
+      def print_explain(i, explain)
+        mount_table(parse_explain(explain), :id => "qtable_#{i}", :style => 'margin:10px;display:none;', :summary => "Debug information for #{title}")
+      end
 
-        def generate_red_color(value, alert)
-          c = ((value.to_f/alert).to_i - 1) * 16
-          c = 0  if c < 0
-          c = 15 if c > 15
+      def generate_red_color(value, alert)
+        c = ((value.to_f/alert).to_i - 1) * 16
+        c = 0  if c < 0
+        c = 15 if c > 15
 
-          c = (15-c).to_s(16)
-          "#ff#{c*4}"
-        end
+        c = (15-c).to_s(16)
+        "#ff#{c*4}"
+      end
 
-        def alert_ratio
-          alert_db_time / alert_sql_number
-        end
+      def alert_ratio
+        alert_db_time / alert_sql_number
+      end
 
     end
   end

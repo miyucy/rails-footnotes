@@ -118,56 +118,56 @@ module Footnotes
     end
 
     protected
-      def valid?
-        performed_render? && valid_format? && valid_content_type? &&
-          @body.is_a?(String) && !component_request? && !xhr? &&
-          !footnotes_disabled?
+    def valid?
+      performed_render? && valid_format? && valid_content_type? &&
+        @body.is_a?(String) && !component_request? && !xhr? &&
+        !footnotes_disabled?
+    end
+
+    def add_footnotes_without_validation!
+      initialize_notes!
+      insert_styles unless @@no_style
+      insert_footnotes
+    end
+
+    def initialize_notes!
+      each_with_rescue(@@klasses) do |klass|
+        note = klass.new(@controller)
+        @notes << note if note.respond_to?(:valid?) && note.valid?
       end
+    end
 
-      def add_footnotes_without_validation!
-        initialize_notes!
-        insert_styles unless @@no_style
-        insert_footnotes
-      end
+    def performed_render?
+      @controller.instance_variable_get(:@performed_render)
+    end
 
-      def initialize_notes!
-        each_with_rescue(@@klasses) do |klass|
-          note = klass.new(@controller)
-          @notes << note if note.respond_to?(:valid?) && note.valid?
-        end
-      end
+    def valid_format?
+      [:html,:rhtml,:xhtml,:rxhtml].include?(@template.template_format.to_sym)
+    end
 
-      def performed_render?
-        @controller.instance_variable_get(:@performed_render)
-      end
+    def valid_content_type?
+      c = @controller.response.headers['Content-Type'].to_s
+      (c.empty? || c =~ /html/)
+    end
 
-      def valid_format?
-        [:html,:rhtml,:xhtml,:rxhtml].include?(@template.template_format.to_sym)
-      end
+    def component_request?
+      @controller.instance_variable_get(:@parent_controller)
+    end
 
-      def valid_content_type?
-        c = @controller.response.headers['Content-Type'].to_s
-        (c.empty? || c =~ /html/)
-      end
+    def xhr?
+      @controller.request.xhr?
+    end
 
-      def component_request?
-        @controller.instance_variable_get(:@parent_controller)
-      end
+    def footnotes_disabled?
+      @controller.params[:footnotes] == "false"
+    end
 
-      def xhr?
-        @controller.request.xhr?
-      end
+    #
+    # Insertion methods
+    #
 
-      def footnotes_disabled?
-        @controller.params[:footnotes] == "false"
-      end
-
-      #
-      # Insertion methods
-      #
-
-      def insert_styles
-        insert_text :before, /<\/head>/i, <<-HTML
+    def insert_styles
+      insert_text :before, /<\/head>/i, <<-HTML
         <!-- Footnotes Style -->
         <style type="text/css">
           #footnotes_debug {margin: 2em 0 1em 0; text-align: center; color: #444; line-height: 16px;}
@@ -184,13 +184,13 @@ module Footnotes
         </style>
         <!-- End Footnotes Style -->
         HTML
-      end
+    end
 
-      def insert_footnotes
-        # Fieldsets method should be called first
-        content = fieldsets
+    def insert_footnotes
+      # Fieldsets method should be called first
+      content = fieldsets
 
-        footnotes_html = <<-HTML
+      footnotes_html = <<-HTML
         <!-- Footnotes -->
         <div style="clear:both"></div>
         <div id="footnotes_debug">
@@ -202,14 +202,14 @@ module Footnotes
               function hideAll(){
                 #{close unless @@multiple_notes}
               }
-              
+
               function hideAllAndToggle(id) {
                 hideAll();
                 toggle(id)
 
                 location.href = '#footnotes_debug';
-              }  
-              
+              }
+
               function toggle(id){
                 var el = document.getElementById(id);
                 if (el.style.display == 'none') {
@@ -218,11 +218,11 @@ module Footnotes
                   Footnotes.hide(el);
                 }
               }
-            
+
               function show(element) {
                 element.style.display = 'block'
               }
-            
+
               function hide(element) {
                 element.style.display = 'none'
               }
@@ -241,106 +241,106 @@ module Footnotes
         <!-- End Footnotes -->
         HTML
 
-        placeholder = /<div[^>]+id=['"]footnotes_holder['"][^>]*>/i
-        if @body =~ placeholder
-          insert_text :after, placeholder, footnotes_html
-        else
-          insert_text :before, /<\/body>/i, footnotes_html
-        end
+      placeholder = /<div[^>]+id=['"]footnotes_holder['"][^>]*>/i
+      if @body =~ placeholder
+        insert_text :after, placeholder, footnotes_html
+      else
+        insert_text :before, /<\/body>/i, footnotes_html
+      end
+    end
+
+    # Process notes to gets their links in their equivalent row
+    #
+    def links
+      links = Hash.new([])
+      order = []
+      each_with_rescue(@notes) do |note|
+        order << note.row
+        links[note.row] += [link_helper(note)]
       end
 
-      # Process notes to gets their links in their equivalent row
-      #
-      def links
-        links = Hash.new([])
-        order = []
-        each_with_rescue(@notes) do |note|
-          order << note.row
-          links[note.row] += [link_helper(note)]
-        end
-
-        html = ''
-        order.uniq!
-        order.each do |row|
-          html << "#{row.is_a?(String) ? row : row.to_s.camelize}: #{links[row].join(" | \n")}<br />"
-        end
-        html
+      html = ''
+      order.uniq!
+      order.each do |row|
+        html << "#{row.is_a?(String) ? row : row.to_s.camelize}: #{links[row].join(" | \n")}<br />"
       end
+      html
+    end
 
-      # Process notes to get their content
-      #
-      def fieldsets
-        content = ''
-        each_with_rescue(@notes) do |note|
-          next unless note.has_fieldset?
-          content << <<-HTML
+    # Process notes to get their content
+    #
+    def fieldsets
+      content = ''
+      each_with_rescue(@notes) do |note|
+        next unless note.has_fieldset?
+        content << <<-HTML
             <fieldset id="#{note.to_sym}_debug_info" style="display: none">
               <legend>#{note.legend}</legend>
               <div>#{note.content}</div>
             </fieldset>
           HTML
-        end
-        content
+      end
+      content
+    end
+
+    # Process notes to get javascript code to close them.
+    # This method is only used when multiple_notes is false.
+    #
+    def close
+      javascript = ''
+      each_with_rescue(@notes) do |note|
+        next unless note.has_fieldset?
+        javascript << close_helper(note)
+      end
+      javascript
+    end
+
+    #
+    # Helpers
+    #
+
+    # Helper that creates the javascript code to close the note
+    #
+    def close_helper(note)
+      "Footnotes.hide(document.getElementById('#{note.to_sym}_debug_info'));\n"
+    end
+
+    # Helper that creates the link and javascript code when note is clicked
+    #
+    def link_helper(note)
+      onclick = note.onclick
+      unless href = note.link
+        href = '#'
+        onclick ||= "Footnotes.hideAllAndToggle('#{note.to_sym}_debug_info');return false;" if note.has_fieldset?
       end
 
-      # Process notes to get javascript code to close them.
-      # This method is only used when multiple_notes is false.
-      #
-      def close
-        javascript = ''
-        each_with_rescue(@notes) do |note|
-          next unless note.has_fieldset?
-          javascript << close_helper(note)
-        end
-        javascript
-      end
+      "<a href=\"#{href}\" onclick=\"#{onclick}\">#{note.title}</a>"
+    end
 
-      #
-      # Helpers
-      #
+    # Inserts text in to the body of the document
+    # +pattern+ is a Regular expression which, when matched, will cause +new_text+
+    # to be inserted before or after the match.  If no match is found, +new_text+ is appended
+    # to the body instead. +position+ may be either :before or :after
+    #
+    def insert_text(position, pattern, new_text)
+      index = case pattern
+              when Regexp
+                if match = @body.match(pattern)
+                  match.offset(0)[position == :before ? 0 : 1]
+                else
+                  @body.size
+                end
+              else
+                pattern
+              end
+      @body.insert index, new_text
+    end
 
-      # Helper that creates the javascript code to close the note
-      #
-      def close_helper(note)
-        "Footnotes.hide(document.getElementById('#{note.to_sym}_debug_info'));\n"
-      end
-
-      # Helper that creates the link and javascript code when note is clicked
-      #
-      def link_helper(note)
-        onclick = note.onclick
-        unless href = note.link
-          href = '#'
-          onclick ||= "Footnotes.hideAllAndToggle('#{note.to_sym}_debug_info');return false;" if note.has_fieldset?
-        end
-
-        "<a href=\"#{href}\" onclick=\"#{onclick}\">#{note.title}</a>"
-      end
-
-      # Inserts text in to the body of the document
-      # +pattern+ is a Regular expression which, when matched, will cause +new_text+
-      # to be inserted before or after the match.  If no match is found, +new_text+ is appended
-      # to the body instead. +position+ may be either :before or :after
-      #
-      def insert_text(position, pattern, new_text)
-        index = case pattern
-          when Regexp
-            if match = @body.match(pattern)
-              match.offset(0)[position == :before ? 0 : 1]
-            else
-              @body.size
-            end
-          else
-            pattern
-          end
-        @body.insert index, new_text
-      end
-
-      # Instance each_with_rescue method
-      # 
-      def each_with_rescue(*args, &block)
-        self.class.each_with_rescue(*args, &block)
-      end
+    # Instance each_with_rescue method
+    #
+    def each_with_rescue(*args, &block)
+      self.class.each_with_rescue(*args, &block)
+    end
 
   end
 end

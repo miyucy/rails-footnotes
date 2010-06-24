@@ -1,14 +1,14 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes
     class LogNote < AbstractNote
       @@log = []
-      
+
       def self.log(message)
         @@log << message
       end
-      
+
       def initialize(controller)
         @controller = controller
       end
@@ -20,7 +20,7 @@ module Footnotes
       def content
         escape(log.gsub(/\e\[.+?m/, '')).gsub("\n", '<br />')
       end
-      
+
       def log
         unless @log
           @log = @@log.join('')
@@ -39,9 +39,8 @@ module Footnotes
           logged_message
         end
       end
-      
+
       Rails.logger.extend LoggingExtensions
     end
   end
 end
-

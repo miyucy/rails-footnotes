@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/files_note"
+require 'rails-footnotes/notes/files_note'
 
 module Footnotes
   module Notes
@@ -8,9 +8,9 @@ module Footnotes
       end
 
       protected
-        def scan_text(text)
-          text.scan(/<script[^>]+src\s*=\s*['"]([^>?'"]+\.js)/im).flatten
-        end
+      def scan_text(text)
+        text.scan(/<script[^>]+src\s*=\s*['"]([^>?'"]+\.js)/im).flatten
+      end
     end
   end
 end

@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes
@@ -20,9 +20,9 @@ module Footnotes
       end
 
       protected
-        def filename
-          File.join(File.expand_path(RAILS_ROOT), 'app', 'layouts', "#{@controller.active_layout.to_s.underscore}").sub('/layouts/layouts/', '/views/layouts/')
-        end
+      def filename
+        File.join(File.expand_path(RAILS_ROOT), 'app', 'layouts', "#{@controller.active_layout.to_s.underscore}").sub('/layouts/layouts/', '/views/layouts/')
+      end
     end
   end
 end

@@ -1,21 +1,21 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes
     class AssignsNote < AbstractNote
       @@ignored_assigns = [
-                            :@real_format,
-                            :@before_filter_chain_aborted,
-                            :@performed_redirect,
-                            :@performed_render,
-                            :@_params,
-                            :@_response,
-                            :@url,
-                            :@template,
-                            :@_request,
-                            :@db_rt_before_render,
-                            :@db_rt_after_render,
-                            :@view_runtime
+                           :@real_format,
+                           :@before_filter_chain_aborted,
+                           :@performed_redirect,
+                           :@performed_render,
+                           :@_params,
+                           :@_response,
+                           :@url,
+                           :@template,
+                           :@_request,
+                           :@db_rt_before_render,
+                           :@db_rt_after_render,
+                           :@view_runtime
                           ]
       cattr_accessor :ignored_assigns, :instance_writter => false
 
@@ -41,20 +41,20 @@ module Footnotes
 
       protected
 
-        def assigns
-          assign = []
-          ignored = @@ignored_assigns
-          
-          @controller.instance_variables.each {|x| assign << x.intern }
-          @controller.protected_instance_variables.each {|x| ignored << x.intern } if @controller.respond_to? :protected_instance_variables
-           
-          assign -= ignored            
-          return assign
-        end
+      def assigns
+        assign = []
+        ignored = @@ignored_assigns
 
-        def assigned_value(key)
-          @controller.instance_variable_get(key).inspect
-        end
+        @controller.instance_variables.each {|x| assign << x.intern }
+        @controller.protected_instance_variables.each {|x| ignored << x.intern } if @controller.respond_to? :protected_instance_variables
+
+        assign -= ignored
+        return assign
+      end
+
+      def assigned_value(key)
+        @controller.instance_variable_get(key).inspect
+      end
     end
   end
 end

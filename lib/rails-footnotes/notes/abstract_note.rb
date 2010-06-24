@@ -86,13 +86,13 @@ module Footnotes
 
       # Set href field for Footnotes links.
       # If it's nil, Footnotes will use '#'.
-      # 
+      #
       def link
       end
 
       # Set onclick field for Footnotes links.
       # If it's nil, Footnotes will make it open the fieldset.
-      # 
+      #
       def onclick
       end
 
@@ -124,56 +124,55 @@ module Footnotes
       # Some helpers to generate notes.
       #
       protected
-        # Return if Footnotes::Filter.prefix exists or not.
-        # Some notes only work with prefix set.
-        #
-        def prefix?
-          !Footnotes::Filter.prefix.blank?
-        end
+      # Return if Footnotes::Filter.prefix exists or not.
+      # Some notes only work with prefix set.
+      #
+      def prefix?
+        !Footnotes::Filter.prefix.blank?
+      end
 
-        # Escape HTML special characters.
-        #
-        def escape(text)
-          text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
-        end
+      # Escape HTML special characters.
+      #
+      def escape(text)
+        text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+      end
 
-        # Gets a bidimensional array and create a table.
-        # The first array is used as label.
-        #
-        def mount_table(array, options = {})
-          header = array.shift
-          return '' if array.empty?
+      # Gets a bidimensional array and create a table.
+      # The first array is used as label.
+      #
+      def mount_table(array, options = {})
+        header = array.shift
+        return '' if array.empty?
 
-          header = header.collect{|i| escape(i.to_s.humanize) }
-#          array = array.collect { |a| a.collect { |b| c = b.to_s; escape(c) unless c == ""}}
-          rows = array.collect{|i| "<tr><td>#{i.join('</td><td>')}</td></tr>" }
+        header = header.collect{|i| escape(i.to_s.humanize) }
+        rows = array.collect{|i| "<tr><td>#{i.join('</td><td>')}</td></tr>" }
 
-          <<-TABLE
+        <<-TABLE
           <table #{hash_to_xml_attributes(options)}>
             <thead><tr><th>#{header.join('</th><th>')}</th></tr></thead>
             <tbody>#{rows.join}</tbody>
           </table>
           TABLE
-        end
+      end
 
-        # Mount table for hash, using name and value and adding a name_value class
-        # to the generated table.
-        #
-        def mount_table_for_hash(hash, options={})
-          rows = []
-          hash.each do |key, value|
-            rows << [ key.to_sym.inspect, escape(value.inspect) ]
-          end
-          mount_table(rows.unshift(['Name', 'Value']), {:class => 'name_value'}.merge(options))
+      # Mount table for hash, using name and value and adding a name_value class
+      # to the generated table.
+      #
+      def mount_table_for_hash(hash, options={})
+        rows = []
+        hash.each do |key, value|
+          rows << [ key.to_sym.inspect, escape(value.inspect) ]
         end
+        mount_table(rows.unshift(['Name', 'Value']), {:class => 'name_value'}.merge(options))
+      end
 
-        def hash_to_xml_attributes(hash)
-          newstring = ""
-          hash.each do |key, value|
-            newstring << "#{key.to_s}=\"#{value.gsub('"','\"')}\" "
-          end 
-          return newstring
+      def hash_to_xml_attributes(hash)
+        newstring = ""
+        hash.each do |key, value|
+          newstring << "#{key.to_s}=\"#{value.gsub('"','\\"')}\" "
         end
+        return newstring
+      end
     end
   end
 end

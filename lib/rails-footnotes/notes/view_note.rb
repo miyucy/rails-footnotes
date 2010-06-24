@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/abstract_note"
+require 'rails-footnotes/notes/abstract_note'
 
 module Footnotes
   module Notes
@@ -22,13 +22,13 @@ module Footnotes
 
       protected
 
-        def first_render?
-          @template.instance_variable_get(:@_first_render)
-        end
+      def first_render?
+        @template.instance_variable_get(:@_first_render)
+      end
 
-        def filename
-          @filename ||= @template.instance_variable_get(:@_first_render).filename
-        end
+      def filename
+        @filename ||= @template.instance_variable_get(:@_first_render).filename
+      end
 
     end
   end
