@@ -89,10 +89,7 @@ module Footnotes
       end
 
       def parse_trace(trace)
-        trace.map do |t|
-          s = t.split(':')
-          %[<a href="#{escape(Footnotes::Filter.prefix("#{RAILS_ROOT}/#{s[0]}", s[1].to_i, 1))}">#{escape(t)}</a><br />]
-        end.join
+        trace.map { |t| "#{escape t}<br />" }.join
       end
 
       def print_name_and_time(name, time)

@@ -13,12 +13,8 @@ module Footnotes
 
       def link
         if controller_filename && controller_line_number
-          escape(Footnotes::Filter.prefix(controller_filename, controller_line_number + 1, 3))
+          escape(controller_filename)
         end
-      end
-
-      def valid?
-        prefix?
       end
 
       protected

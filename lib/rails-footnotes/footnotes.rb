@@ -4,9 +4,6 @@ module Footnotes
     @@multiple_notes = false
     @@klasses = []
 
-    # Default link prefix is textmate
-    @@prefix = 'txmt://open?url=file://%s&amp;line=%d&amp;column=%d'
-
     # Edit notes
     @@notes = [ :controller, :view, :layout, :partials, :stylesheets, :javascripts ]
     # Show notes
@@ -20,9 +17,8 @@ module Footnotes
 
     # :no_style       => If you don't want the style to be appended to your pages
     # :notes          => Class variable that holds the notes to be processed
-    # :prefix         => Prefix appended to FootnotesLinks
     # :multiple_notes => Set to true if you want to open several notes at the same time
-    cattr_accessor :no_style, :notes, :prefix, :multiple_notes
+    cattr_accessor :no_style, :notes, :multiple_notes
 
     class << self
       # Method called to start the notes
@@ -78,17 +74,6 @@ module Footnotes
       #
       def log_error(title, exception)
         RAILS_DEFAULT_LOGGER.error "#{title}: #{exception}\n#{exception.backtrace.join("\n")}"
-      end
-
-      # If none argument is sent, simply return the prefix.
-      # Otherwise, replace the args in the prefix.
-      #
-      def prefix(*args)
-        if args.empty?
-          @@prefix
-        else
-          format(@@prefix, *args)
-        end
       end
 
     end

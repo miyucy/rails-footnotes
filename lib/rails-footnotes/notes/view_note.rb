@@ -13,11 +13,11 @@ module Footnotes
       end
 
       def link
-        escape(Footnotes::Filter.prefix(filename, 1, 1))
+        escape(filename)
       end
 
       def valid?
-        prefix? && first_render?
+        first_render?
       end
 
       protected

@@ -12,11 +12,11 @@ module Footnotes
       end
 
       def link
-        escape(Footnotes::Filter.prefix(filename, 1, 1))
+        escape(filename)
       end
 
       def valid?
-        prefix? && @controller.active_layout
+        @controller.active_layout
       end
 
       protected

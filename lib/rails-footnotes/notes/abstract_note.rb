@@ -124,13 +124,6 @@ module Footnotes
       # Some helpers to generate notes.
       #
       protected
-      # Return if Footnotes::Filter.prefix exists or not.
-      # Some notes only work with prefix set.
-      #
-      def prefix?
-        !Footnotes::Filter.prefix.blank?
-      end
-
       # Escape HTML special characters.
       #
       def escape(text)
