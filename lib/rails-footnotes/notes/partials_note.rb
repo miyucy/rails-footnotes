@@ -15,7 +15,7 @@ module Footnotes
       end
       def content
         rows = partials.map do |filename|
-          shortened_name=filename.gsub(File.join(RAILS_ROOT,"app/views/"),"")
+          shortened_name=filename.gsub(File.join(Rails.root, "app/views/"), "")
           ["#{shortened_name}","#{@partial_times[filename].sum}ms",@partial_counts[filename]]
         end
         mount_table(rows.unshift(%w(Partial Time Count)), :summary => "Partials for #{title}")

@@ -133,7 +133,7 @@ module Footnotes
 
         # Strip, select those ones from app and reject first two, because they
         # are from the plugin
-        @trace = Kernel.caller.collect(&:strip).select{|i| i.gsub!(/^#{RAILS_ROOT}\//im, '') }[2..-1]
+        @trace = Kernel.caller.collect(&:strip).select{|i| i.gsub!(/^#{Rails.root}\//im, '') }[2..-1]
       end
     end
 
