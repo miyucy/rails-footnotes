@@ -1,6 +1,5 @@
 module Footnotes
   class Filter
-    @@multiple_notes = false
     @@klasses = []
 
     # Edit notes
@@ -15,8 +14,7 @@ module Footnotes
     # end
 
     # :notes          => Class variable that holds the notes to be processed
-    # :multiple_notes => Set to true if you want to open several notes at the same time
-    cattr_accessor :notes, :multiple_notes
+    cattr_accessor :notes
 
     class << self
       # Method called to start the notes
@@ -182,7 +180,6 @@ module Footnotes
             var Footnotes = function() {
 
               function hideAll(){
-                #{close unless @@multiple_notes}
               }
 
               function hideAllAndToggle(id) {
@@ -265,27 +262,9 @@ module Footnotes
       content
     end
 
-    # Process notes to get javascript code to close them.
-    # This method is only used when multiple_notes is false.
-    #
-    def close
-      javascript = ''
-      each_with_rescue(@notes) do |note|
-        next unless note.has_fieldset?
-        javascript << close_helper(note)
-      end
-      javascript
-    end
-
     #
     # Helpers
     #
-
-    # Helper that creates the javascript code to close the note
-    #
-    def close_helper(note)
-      "Footnotes.hide(document.getElementById('#{note.to_sym}_debug_info'));\n"
-    end
 
     # Helper that creates the link and javascript code when note is clicked
     #
