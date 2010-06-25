@@ -247,7 +247,13 @@ w.document.close();
     # Helper that creates the link and javascript code when note is clicked
     #
     def link_helper(note)
-      %(<a href="##{note.to_sym}_debug_info">#{note.title}</a>)
+      href   = note.link
+      href ||= "##{note.to_sym}_debug_info"
+
+      onclick = note.onclick
+      onclick = %(onclick="#{onclick}") if onclick
+
+      %(<a href="#{href}" #{onclick}>#{note.title}</a>)
     end
 
     # Inserts text in to the body of the document

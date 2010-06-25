@@ -12,7 +12,7 @@ module Footnotes
           case k
           when 'HTTP_COOKIE'
             # Replace HTTP_COOKIE for a link
-            [k, '<a href="#" style="color:#009" onclick="Footnotes.hideAllAndToggle(\'cookies_debug_info\');return false;">See cookies on its tab</a>']
+            [k, %(<a href="#cookies_debug_info" style="color:#009;">See cookies on its tab</a>)]
           else
             [k, escape(v.to_s)]
           end
