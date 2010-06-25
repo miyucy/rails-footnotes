@@ -99,11 +99,6 @@ module Footnotes
     end
 
     protected
-    def valid?
-      performed_render? && valid_format? && valid_content_type? &&
-        @body.is_a?(String) && !component_request? && !xhr? &&
-        !footnotes_disabled?
-    end
 
     def add_footnotes_without_validation!
       initialize_notes!
@@ -115,6 +110,19 @@ module Footnotes
         note = klass.new(@controller)
         @notes << note if note.respond_to?(:valid?) && note.valid?
       end
+    end
+
+    def valid?
+      (
+       @body.is_a?(String) &&
+       performed_render? &&
+       valid_format? &&
+       valid_content_type? &&
+       !component_request? &&
+       !xhr? &&
+       !footnotes_disabled? &&
+       !mobile?
+       )
     end
 
     def performed_render?
@@ -139,6 +147,12 @@ module Footnotes
 
     def footnotes_disabled?
       @controller.params[:footnotes] == "false"
+    end
+
+    def mobile?
+      (@controller.request.respond_to?(:mobile?) &&
+       @controller.request.mobile? &&
+       @controller.request.mobile.valid_ip?)
     end
 
     #
