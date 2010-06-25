@@ -8,10 +8,6 @@ module Footnotes
         parse_files!
       end
 
-      def row
-        :edit
-      end
-
       def content
         if @files.empty?
           ""
