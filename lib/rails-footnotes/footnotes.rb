@@ -121,7 +121,8 @@ module Footnotes
        !component_request? &&
        !xhr? &&
        !footnotes_disabled? &&
-       !mobile?
+       !mobile? &&
+       !oauth_verified?
        )
     end
 
@@ -153,6 +154,11 @@ module Footnotes
       (@controller.request.respond_to?(:mobile?) &&
        @controller.request.mobile? &&
        @controller.request.mobile.valid_ip?)
+    end
+
+    def oauth_verified?
+      (@controller.request.respond_to?(:oauth_verified?) &&
+       @controller.request.oauth_verified?)
     end
 
     #
