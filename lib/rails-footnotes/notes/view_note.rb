@@ -8,12 +8,8 @@ module Footnotes
         @template = controller.instance_variable_get(:@template)
       end
 
-      def row
-        :edit
-      end
-
-      def link
-        escape(filename)
+      def content
+        "<ul><li>#{filename}</li></ul>"
       end
 
       def valid?

@@ -7,12 +7,8 @@ module Footnotes
         @controller = controller
       end
 
-      def row
-        :edit
-      end
-
-      def link
-        escape(filename)
+      def content
+        "<ul><li>#{filename}</li></ul>"
       end
 
       def valid?

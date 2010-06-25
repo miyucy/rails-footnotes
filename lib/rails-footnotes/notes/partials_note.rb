@@ -7,9 +7,6 @@ module Footnotes
         super
         @controller = controller
       end
-      def row
-        :edit
-      end
       def title
         "Partials (#{partials.size})"
       end
