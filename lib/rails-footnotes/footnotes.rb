@@ -2,10 +2,10 @@ module Footnotes
   class Filter
     @@klasses = []
 
-    # Edit notes
-    @@notes = [ :controller, :view, :layout, :partials, :stylesheets, :javascripts ]
     # Show notes
-    @@notes += [ :assigns, :session, :cookies, :params, :filters, :routes, :env, :queries, :log, :general ]
+    @@notes = [ :controller, :view, :layout, :partials, :stylesheets, :javascripts,
+                :assigns, :session, :cookies, :params, :filters, :routes, :env, :queries,
+                :log, :general, ]
 
     # Change queries for rpm note when available
     # if defined?(NewRelic)
@@ -107,8 +107,7 @@ module Footnotes
 
     def add_footnotes_without_validation!
       initialize_notes!
-      insert_styles
-      insert_footnotes
+      insert_popup
     end
 
     def initialize_notes!
@@ -146,86 +145,65 @@ module Footnotes
     # Insertion methods
     #
 
-    def insert_styles
-      insert_text :before, /<\/head>/i, <<-HTML
-        <!-- Footnotes Style -->
-        <style type="text/css">
-          #footnotes_debug {margin: 2em 0 1em 0; text-align: center; color: #444; line-height: 16px;}
-          #footnotes_debug th, #footnotes_debug td {color: #444; line-height: 18px;}
-          #footnotes_debug a {text-decoration: none; color: #444; line-height: 18px;}
-          #footnotes_debug table {text-align: center;}
-          #footnotes_debug table td {padding: 0 5px;}
-          #footnotes_debug tbody {text-align: left;}
-          #footnotes_debug .name_values td {vertical-align: top;}
-          #footnotes_debug legend {background-color: #FFF;}
-          #footnotes_debug fieldset {text-align: left; border: 1px dashed #aaa; padding: 0.5em 1em 1em 1em; margin: 1em 2em; color: #444; background-color: #FFF;}
-          /* Aditional Stylesheets */
-          #{@notes.map(&:stylesheet).compact.join("\n")}
-        </style>
-        <!-- End Footnotes Style -->
-        HTML
+    def insert_popup
+      content = ""
+      popup_html.each_line do |line|
+        snippet = line.gsub(%r("), %q(\\")).gsub(%r(</), %q(<"+"/)).rstrip
+        content << "w.document.write(\"#{snippet}\\n\");"
+      end
+
+      insert_text :before, %r(</body>)i, <<-HTML
+<script type="text/javascript"><!--
+(function(){
+w = window.open("","#{@controller.class.name}","width=640,height=480,resizable,scrollerbars=yes");
+#{content}
+w.document.close();
+})();
+--></script>
+      HTML
     end
 
-    def insert_footnotes
-      # Fieldsets method should be called first
+    def popup_html
+      <<-HTML
+<html>
+<head>
+<title>#{@controller.class.name}</title>
+#{popup_styles}
+</head>
+<body>
+#{popup_bodies}
+</div>
+</body>
+</html>
+      HTML
+    end
+
+    def popup_styles
+      <<-CSS
+<style type="text/css">
+  #footnotes_debug {margin: 2em 0 1em 0; text-align: center; color: #444; line-height: 16px;}
+  #footnotes_debug th, #footnotes_debug td {color: #444; line-height: 18px;}
+  #footnotes_debug a {text-decoration: none; color: #444; line-height: 18px;}
+  #footnotes_debug table {text-align: center;}
+  #footnotes_debug table td {padding: 0 5px;}
+  #footnotes_debug tbody {text-align: left;}
+  #footnotes_debug .name_values td {vertical-align: top;}
+  #footnotes_debug legend {background-color: #FFF;}
+  #footnotes_debug fieldset {text-align: left; border: 1px dashed #aaa; padding: 0.5em 1em 1em 1em; margin: 1em 2em; color: #444; background-color: #FFF;}
+  /* Aditional Stylesheets */
+  #{@notes.map(&:stylesheet).compact.join("\n")}
+</style>
+      CSS
+    end
+
+    def popup_bodies
       content = fieldsets
-
-      footnotes_html = <<-HTML
-        <!-- Footnotes -->
-        <div style="clear:both"></div>
-        <div id="footnotes_debug">
-          #{links}
-          #{content}
-          <script type="text/javascript">
-            var Footnotes = function() {
-
-              function hideAll(){
-              }
-
-              function hideAllAndToggle(id) {
-                hideAll();
-                toggle(id)
-
-                location.href = '#footnotes_debug';
-              }
-
-              function toggle(id){
-                var el = document.getElementById(id);
-                if (el.style.display == 'none') {
-                  Footnotes.show(el);
-                } else {
-                  Footnotes.hide(el);
-                }
-              }
-
-              function show(element) {
-                element.style.display = 'block'
-              }
-
-              function hide(element) {
-                element.style.display = 'none'
-              }
-
-              return {
-                show: show,
-                hide: hide,
-                toggle: toggle,
-                hideAllAndToggle: hideAllAndToggle
-              }
-            }();
-            /* Additional Javascript */
-            #{@notes.map(&:javascript).compact.join("\n")}
-          </script>
-        </div>
-        <!-- End Footnotes -->
-        HTML
-
-      placeholder = /<div[^>]+id=['"]footnotes_holder['"][^>]*>/i
-      if @body =~ placeholder
-        insert_text :after, placeholder, footnotes_html
-      else
-        insert_text :before, /<\/body>/i, footnotes_html
-      end
+      <<-HTML
+<div id="footnotes_debug">
+#{links}
+#{content}
+</div>
+      HTML
     end
 
     # Process notes to gets their links in their equivalent row
@@ -253,11 +231,11 @@ module Footnotes
       each_with_rescue(@notes) do |note|
         next unless note.has_fieldset?
         content << <<-HTML
-            <fieldset id="#{note.to_sym}_debug_info">
-              <legend>#{note.legend}</legend>
-              <div>#{note.content}</div>
-            </fieldset>
-          HTML
+<fieldset id="#{note.to_sym}_debug_info">
+  <legend>#{note.legend}</legend>
+  <div>#{note.content}</div>
+</fieldset>
+        HTML
       end
       content
     end
@@ -269,13 +247,7 @@ module Footnotes
     # Helper that creates the link and javascript code when note is clicked
     #
     def link_helper(note)
-      onclick = note.onclick
-      unless href = note.link
-        href = '#'
-        onclick ||= "Footnotes.hideAllAndToggle('#{note.to_sym}_debug_info');return false;" if note.has_fieldset?
-      end
-
-      "<a href=\"#{href}\" onclick=\"#{onclick}\">#{note.title}</a>"
+      %(<a href="##{note.to_sym}_debug_info">#{note.title}</a>)
     end
 
     # Inserts text in to the body of the document
