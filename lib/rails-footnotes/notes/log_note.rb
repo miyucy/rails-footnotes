@@ -23,9 +23,8 @@ module Footnotes
 
       def log
         unless @log
-          @log = @@log.join('')
-          @@log = []
-          if rindex = @log.rindex('Processing '+@controller.controller_class_name+'#'+@controller.action_name)
+          @log = @@log.join
+          if rindex = @log.rindex("Processing #{@controller.controller_class_name}##{@controller.action_name}")
             @log = @log[rindex..-1]
           end
         end
